@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Stream download test — ente-io/ente#628</title>
+        <style>
+            :root {
+                color-scheme: light dark;
+                --fg: #111;
+                --bg: #fff;
+                --muted: #555;
+                --border: #ccc;
+            }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --fg: #eee;
+                    --bg: #111;
+                    --muted: #aaa;
+                    --border: #444;
+                }
+            }
+            body {
+                font-family:
+                    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                color: var(--fg);
+                background: var(--bg);
+                max-width: 760px;
+                margin: 2rem auto;
+                padding: 0 1rem;
+                line-height: 1.5;
+            }
+            h1 {
+                font-size: 1.3rem;
+            }
+            p {
+                color: var(--muted);
+            }
+            section {
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            button {
+                font: inherit;
+                padding: 0.5rem 0.9rem;
+                margin: 0.25rem 0.5rem 0.25rem 0;
+                cursor: pointer;
+            }
+            ul {
+                padding-left: 1.2rem;
+            }
+            a {
+                color: inherit;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Stream download test</h1>
+        <p>
+            For
+            <a href="https://github.com/ente-io/ente/discussions/628"
+                >ente-io/ente#628</a
+            >
+            — single-ZIP album downloads via a service worker. See
+            <a href="README.md">README.md</a> for full context, the bugs
+            found on each browser, and how to verify a downloaded file.
+        </p>
+
+        <section>
+            <h2>Keep-alive vs. idle-timeout</h2>
+            <p>
+                Total 128 MiB in 32 chunks of 4 MiB each, with a 40s pause
+                every 8 chunks (3 pauses). Every byte of a given chunk equals
+                that chunk's own 0-based index mod 256; verify the saved
+                file with <code>verify.mjs</code> (see README).
+            </p>
+            <button data-start="no-keepalive,0">
+                Run WITHOUT keep-alive pings
+            </button>
+            <button data-start="keepalive,10000">
+                Run WITH keep-alive pings (production default)
+            </button>
+        </section>
+
+        <section>
+            <h2>Firefox Android control (~30s GeckoView threshold)</h2>
+            <p>
+                Isolates just the pause length (keep-alive pings stay on for
+                both) to bracket the ~30s read-timeout found on Firefox for
+                Android — see README for detail. Expect PASS at 25s, FAIL at
+                35s on that browser specifically; expect PASS at both on
+                every other browser.
+            </p>
+            <button data-start="pause25s,10000,25000">
+                Run with a 25s pause
+            </button>
+            <button data-start="pause35s,10000,35000">
+                Run with a 35s pause
+            </button>
+        </section>
+
+        <ul id="runs"></ul>
+
+        <script type="module" src="app.js"></script>
+    </body>
+</html>
